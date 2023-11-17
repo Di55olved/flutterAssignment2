@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/widgets/login.dart';
+import 'package:flutter_application_1/widgets/auth/login.dart';
+import 'package:flutter_application_1/widgets/screens/home_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -121,6 +124,24 @@ class _SignUpState extends State<SignUp> {
                       shape: MaterialStateProperty.all(RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40.0)))),
                   child: const Text("Sign Up"),
+                ),
+              ),
+              const SizedBox(
+                height: 15.0,
+              ),
+              SizedBox(
+                width: 400.0,
+                height: 50.0,
+                child: ElevatedButton(
+                  onPressed: () {
+                    //_googleHandleClicked();
+                  },
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          const Color.fromARGB(255, 164, 52, 255)),
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40.0)))),
+                  child: const Text("Sign Up With Google"),
                 ),
               ),
               const SizedBox(

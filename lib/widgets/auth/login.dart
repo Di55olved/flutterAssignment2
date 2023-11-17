@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/widgets/sign.dart';
+import 'package:flutter_application_1/widgets/auth/sign.dart';
+import 'package:flutter_application_1/widgets/screens/home_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -9,6 +13,38 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  TextEditingController textFieldControllerEmail = TextEditingController();
+  TextEditingController textFieldControllerPassword = TextEditingController();
+  String textFieldValueEmail = '';
+  String textFieldValuePassword = '';
+
+  _googleHandleClicked() {
+    _signInWithGoogle().then((user) {
+      print("User: ${user.user}");
+      print("User Additional Info: ${user.additionalUserInfo}");
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    });
+  }
+
+  Future<UserCredential> _signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextFormField(
                   autovalidateMode: AutovalidateMode.always,
+                  controller: textFieldControllerEmail,
                   validator: (value) {
                     if (value != null && value.length > 50) {
                       return 'Max length of 50 characters';
@@ -61,6 +98,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextFormField(
                   obscureText: true,
+                  controller: textFieldControllerPassword,
                   autovalidateMode: AutovalidateMode.always,
                   validator: (value) {
                     if (value != null && value.length > 20) {
@@ -87,7 +125,29 @@ class _LoginPageState extends State<LoginPage> {
                   width: 400.0,
                   height: 50.0,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      textFieldValueEmail = textFieldControllerEmail.text;
+                      textFieldValuePassword = textFieldControllerPassword.text;
+                      try {
+                        await FirebaseAuth.instance.signInWithEmailAndPassword(
+                            email: textFieldValueEmail,
+                            password: textFieldValuePassword);
+                        // Sign-in was successful, navigate to a different page.
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                        );
+                      } on FirebaseAuthException catch (e) {
+                        if (e.code == 'user-not-found') {
+                          print('No user found for that email.');
+                        } else if (e.code == 'wrong-password') {
+                          print('Wrong password provided for that user.');
+                        }
+                      } catch (e) {
+                        print("Handle this please ${e}");
+                      }
+                    },
                     style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
                             const Color.fromARGB(255, 164, 52, 255)),
@@ -96,6 +156,58 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text("Sign In"),
                   ),
                 ),
+                const SizedBox(
+                  height: 15.0,
+                ),
+                SizedBox(
+                    width: 400.0,
+                    height: 50.0,
+                    child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                            backgroundColor:
+                                const Color.fromARGB(255, 164, 52, 255),
+                            elevation: 1),
+                        onPressed: () {
+                          _googleHandleClicked();
+                        },
+                        label: RichText(
+                            text: const TextSpan(children: [
+                          TextSpan(text: "Login with "),
+                          TextSpan(
+                              text: "Google",
+                              style: TextStyle(fontWeight: FontWeight.bold))
+                        ])),
+                        icon: Image.asset(
+                          'assets/images/google.png',
+                          height: MediaQuery.of(context).size.height * .035,
+                        ))),
+                const SizedBox(
+                  height: 15.0,
+                ),
+                SizedBox(
+                    width: 400.0,
+                    height: 50.0,
+                    child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                            backgroundColor:
+                                const Color.fromARGB(255, 164, 52, 255),
+                            elevation: 1),
+                        onPressed: () {
+                          _googleHandleClicked();
+                        },
+                        label: RichText(
+                            text: const TextSpan(children: [
+                          TextSpan(text: "Login with "),
+                          TextSpan(
+                              text: "Meta",
+                              style: TextStyle(fontWeight: FontWeight.bold))
+                        ])),
+                        icon: Image.asset(
+                          'assets/images/meta.png',
+                          height: MediaQuery.of(context).size.height * .035,
+                        ))),
                 const SizedBox(
                   height: 15.0,
                 ),
